@@ -1,91 +1,86 @@
 #include <stdio.h>
 #include <assert.h>
+#include <string.h>
 
-void bubbleSort(int *array, int arrayLen, int (*comporator)(int first, int second));
-void swap(int *firstValue, int *secondValue);
-// void qSort(int *array, int arrayLen);
-// void recursive(int *array, int arrayLen);
-int comporator(int first, int second);
+void swap(void *firstValue, void *secondValue, size_t sizeType);
+void qSort(int *array, size_t arrayLen,
+           int (*comporator)(const void* first, const void* second), size_t sizeType);
+int intComporator(const void *first, const void *second);
 
 const int SIZE = 8;
 
 int main()
 {
-    int array1[SIZE] = {10, 20, 30, 40, 10, 20, 10, 70};
-    int arrayLen1 = sizeof(array1) / sizeof(int);
     int array2[SIZE] = {10, 20, 30, 40, 10, 20, 10, 70};
-    int arrayLen2 = sizeof(array2) / sizeof(int);
-
-    bubbleSort(array1, arrayLen1, comporator);
-
-    for (int i = 0; i < arrayLen1; i++)
-    {
-        printf("%d ", array1[i]);
-    }
+    size_t arrayLen2 = sizeof(array2) / sizeof(int);
+    size_t sizeType = sizeof(int);
 
     printf("\n-----------------------------------------\n");
 
-    // recursive(array2, arrayLen);
+    qSort(array2, arrayLen2, intComporator, sizeType);
+
+    for (size_t i = 0; i < sizeof(array2) / sizeof(int); i++)
+    {
+        printf("%d ", array2[i]);
+    }
 
     return 0;
 }
 
-void bubbleSort(int *array, int arrayLen, int (*comporator)(int first, int second))
+void qSort(int *array, size_t arrayLen,
+           int (*comporator)(const void* first, const void* second), size_t sizeType)
 {
     assert(array);
+    assert(comporator);
+    assert(sizeType);
 
-    for (int j = 0; j < arrayLen; j++)
+    if (arrayLen <= 1) return;
+
+    int last = array[arrayLen - 1];
+    size_t quantityLessLast = 0;
+    size_t i = 0;
+
+    for (i = 0; i < arrayLen - 1; i++)
     {
-        for (int i = 0; i < arrayLen - j - 1; i++)
+        if (comporator(&array[i], &last) > 0)
         {
-            if (comporator(array[i], array[i + 1]) > 0)
-            {
-                swap(&array[i], &array[i + 1]);
-            }
+            swap(&array[quantityLessLast], &array[i], sizeType);
+            quantityLessLast++;
         }
+    }
+    swap(&array[quantityLessLast], &array[arrayLen - 1], sizeType);
+
+    qSort(array, quantityLessLast, comporator, sizeType);
+
+    qSort(array + quantityLessLast + 1, arrayLen - quantityLessLast - 1, comporator, sizeType);
+
+    return;
+}
+
+void swap(void *firstValue, void *secondValue, size_t sizeType)
+{
+    assert(firstValue);
+    assert(secondValue);
+
+    char temp = 0;
+
+    for (size_t i = 0; i < sizeType; i++)
+    {
+        memcpy(&temp, ((char*)firstValue) + i, 1);
+        memcpy(((char*)firstValue) + i, ((char*)secondValue) + i, 1);
+        memcpy(((char*)secondValue + i), &temp, 1);
     }
 
     return;
 }
 
-//TODO - mergeSort, selectionSort, qSort
-//mergeSort
-
-// void recursive(int *array, int arrayLen)
-// {
-//     qsort(int *array, int arrayLen);
-//
-//     recursive();
-//
-//     return;
-// }
-//
-// void qsort(int *array, int arrayLen)
-// {
-//     for (int i = 0; i < arrayLen)
-//     {
-//
-//
-//
-//     }
-//
-//     return
-// }
-
-void swap(int *firstValue, int *secondValue)
+int intComporator(const void *first, const void *second)
 {
-    assert(firstValue);
-    assert(secondValue);
+    assert(first);
+    assert(second);
 
-    int temp = *firstValue;
-    *firstValue = *secondValue;
-    *secondValue = temp;
+    const int firstValue = *((const int*)first);
+    const int secondValue = *((const int*)second);
 
-    return;
-}
-
-int comporator(int first, int second)
-{
-    return first - second;
-    printf("%d\n", first - second);
+    return secondValue - firstValue;
 }

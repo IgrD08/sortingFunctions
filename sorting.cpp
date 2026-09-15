@@ -1,9 +1,10 @@
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
+#include<stdint.h>
 
 void swap(void *firstValue, void *secondValue, size_t sizeType);
-void qSort(int *array, size_t arrayLen,
+void qSort(void *array, size_t arrayLen,
            int (*comporator)(const void* first, const void* second), size_t sizeType);
 int intComporator(const void *first, const void *second);
 
@@ -27,7 +28,7 @@ int main()
     return 0;
 }
 
-void qSort(int *array, size_t arrayLen,
+void qSort(void *array, size_t arrayLen,
            int (*comporator)(const void* first, const void* second), size_t sizeType)
 {
     assert(array);
@@ -36,23 +37,22 @@ void qSort(int *array, size_t arrayLen,
 
     if (arrayLen <= 1) return;
 
-    int last = array[arrayLen - 1];
+    uint8_t *last = (uint8_t*)array + (arrayLen - 1) * sizeType;
     size_t quantityLessLast = 0;
-    size_t i = 0;
 
-    for (i = 0; i < arrayLen - 1; i++)
+    for (size_t i = 0; i < arrayLen - 1; i++)
     {
-        if (comporator(&array[i], &last) > 0)
+        if (comporator((uint8_t*)array + i * sizeType, last) > 0)
         {
-            swap(&array[quantityLessLast], &array[i], sizeType);
+            swap((uint8_t*)array + quantityLessLast * sizeType, (uint8_t*)array + i * sizeType, sizeType);
             quantityLessLast++;
         }
     }
-    swap(&array[quantityLessLast], &array[arrayLen - 1], sizeType);
+    swap((uint8_t*)array + quantityLessLast * sizeType, (uint8_t*)array + (arrayLen - 1) * sizeType, sizeType);
 
-    qSort(array, quantityLessLast, comporator, sizeType);
+    qSort((uint8_t*)array, quantityLessLast, comporator, sizeType);
 
-    qSort(array + quantityLessLast + 1, arrayLen - quantityLessLast - 1, comporator, sizeType);
+    qSort((uint8_t*)array + (quantityLessLast + 1) * sizeType, arrayLen - quantityLessLast - 1, comporator, sizeType);
 
     return;
 }
